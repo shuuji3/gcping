@@ -176,6 +176,23 @@ recreateLB() {
   echo "Load balance IP:" $lb_addr
 }
 
+deployCloudRunServices() {
+  # List all available Cloud Run regions.
+  curl -H "Authorization: Bearer $(gcloud auth print-access-token)" https://run.googleapis.com/v1/projects/${CLOUDSDK_CORE_PROJECT}/locations | jq .locations[].locationId | sed -e 's/"//g' > run_regions.txt
+
+  # Build the image (again...)
+  image=$(KO_DOCKER_REPO=gcr.io/${CLOUDSDK_CORE_PROJECT} ko publish -B ./cmd/ping/)
+
+  while read region; do
+    gcloud beta run deploy ping \
+      --platform=managed \
+      --region=${region} \
+      --allow-unauthenticated \
+      --update-env-vars=REGION=${region} \
+      --image=${image} || echo $region is not a Cloud Run region
+  done < run_regions.txt
+}
+
 regenConfig() {
   go run cmd/regen/main.go -tok=$(gcloud auth print-access-token)
 }
@@ -190,12 +207,13 @@ uploadPages() {
   gsutil web set -m index.html ${BUCKET}
 }
 
-listRegions
-ensureAddrs
-deleteVMs
-recreateNetwork
-createVMs
-recreateLB
+#listRegions
+#ensureAddrs
+#deleteVMs
+#recreateNetwork
+#createVMs
+#recreateLB
+deployCloudRunServices
 regenConfig
-uploadPages
+#uploadPages
 

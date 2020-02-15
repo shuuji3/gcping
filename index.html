@@ -268,8 +268,14 @@ function updateTable() {
     if (latency == 0) { continue; }
     if (i == 0 && region === 'global') { top++; }
     if (region != 'global') { place++; }
-    var cls = (i == top) ? 'top' : '';
+
     var desc = _DESCS[region] || '';
+    if (region.indexOf('-cloudrun') > 0) {
+      region = region.replace(/-cloudrun/, '');
+      desc = _DESCS[region];
+      desc += ' (Cloud Run)'
+    }
+    var cls = (i == top) ? 'top' : '';
     html += '<tr class="'+cls+'"><td class="regiondesc">'+desc+'<div class="region">'+region+'</div></td>' +
       '<td class="result" id="'+region+'"><div>'+latency+'ms</div></td></tr>';
 

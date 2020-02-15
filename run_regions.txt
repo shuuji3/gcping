@@ -1,0 +1,9 @@
+us-central1
+us-east1
+us-east4
+europe-west1
+asia-northeast1
+asia-east1
+europe-north1
+europe-west4
+us-west1

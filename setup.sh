@@ -193,6 +193,28 @@ deployCloudRunServices() {
   done < run_regions.txt
 }
 
+deployCloudStorageBuckets() {
+  regions=('us' 'asia' 'eu' 'eur4' 'nam4')
+  while read region; do
+    regions+=("${region}")
+  done < regions.txt
+
+  len=${#regions[@]}
+  for (( i=1; i<${len}+1; i++ )); do
+    region=${regions[$i-1]}
+    bucket=gs://gcping-${region}
+    project=${CLOUDSDK_CORE_PROJECT}
+    gsutil ls -p ${project} ${bucket} || \
+        gsutil mb -l ${region} -p ${project} ${bucket} || \
+        echo ${region} is not a GCS region
+
+    echo pong | gsutil \
+        -h "Cache-Control: no-store" \
+        cp - ${bucket}/ping
+    gsutil acl ch -u AllUsers:R ${bucket}/*
+  done
+}
+
 regenConfig() {
   go run cmd/regen/main.go -tok=$(gcloud auth print-access-token)
 }
@@ -214,6 +236,7 @@ uploadPages() {
 #createVMs
 #recreateLB
 deployCloudRunServices
+deployCloudStorageBuckets
 regenConfig
 #uploadPages
 

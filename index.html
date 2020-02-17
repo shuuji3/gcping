@@ -275,6 +275,11 @@ function updateTable() {
       desc = _DESCS[region];
       desc += ' (Cloud Run)'
     }
+    if (region.indexOf('-storage') > 0) {
+      region = region.replace(/-storage/, '');
+      desc = _DESCS[region];
+      desc += ' (Cloud Storage)'
+    }
     var cls = (i == top) ? 'top' : '';
     html += '<tr class="'+cls+'"><td class="regiondesc">'+desc+'<div class="region">'+region+'</div></td>' +
       '<td class="result" id="'+region+'"><div>'+latency+'ms</div></td></tr>';
